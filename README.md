@@ -6,10 +6,6 @@ Below is the roadmap of the technologies and concepts covered.
 
 ---
 
-## 📅 Orientation Day (CDE)
-
----
-
 ## 📥 Data Acquisition
 - 🐍 *Python* (Programming)
 - 🗂 *GitHub* (Version Control)
