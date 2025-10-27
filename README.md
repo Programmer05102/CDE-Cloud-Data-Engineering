@@ -1,5 +1,13 @@
 # ☁ Cloud Data Engineering Program (8–9 Months)
 
+---
+
+![GitHub repo size](https://img.shields.io/github/repo-size/Programmer05102/CDE-Cloud-Data-Engineering)
+![GitHub contributors](https://img.shields.io/github/contributors/Programmer05102/CDE-Cloud-Data-Engineering)
+![GitHub stars](https://img.shields.io/github/stars/Programmer05102/CDE-Cloud-Data-Engineering)
+![GitHub forks](https://img.shields.io/github/forks/Programmer05102/CDE-Cloud-Data-Engineering)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+
 Welcome to my Cloud Data Engineering journey! 🚀  
 This program focuses on building strong skills in *data acquisition, modeling, warehousing, streaming, orchestration, and **cloud architecture* using AWS.  
 Below is the roadmap of the technologies and concepts covered.
