@@ -166,3 +166,14 @@ FROM
     sales.customers
 WHERE 
     email_local_part = 'garry.espinoza';
+
+-- STORED PROCEDURES
+CREATE PROCEDURE sp_ny_customers
+AS
+BEGIN
+	SELECT *
+FROM sales.customers
+WHERE state = 'NY
+END;
+
+EXEC sp_ny_customers;
