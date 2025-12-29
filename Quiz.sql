@@ -60,11 +60,95 @@ INNER JOIN Supplier sup ON po.SupplierID = sup.SupplierID;
 --Display:
 --ShipmentID, WarehouseName, ManagerName, ProductName, QuantityShipped, and TrackingNumber.
 
+SELECT 
+    sh.ShipmentID,
+    w.OpeningHours WarehouseName,   -- No Name column in warehouse; using identifier info
+    e.Name ManagerName,
+    p.Name ProductName,
+    sd.Quantity,
+    sh.TrackingNumber
+FROM shipment sh
+INNER JOIN shipmentdetail sd ON sh.ShipmentID = sd.ShipmentID
+INNER JOIN warehouse w ON sh.WarehouseID = w.WarehouseID
+INNER JOIN employee e ON w.ManagerID = e.EmployeeID
+INNER JOIN product p ON sd.ProductID = p.ProductID;
+
 --Q7. Find the top 3 highest-value orders per customer using RANK(). Display CustomerID, CustomerName, OrderID, and TotalAmount.
 
+SELECT 
+    CustomerID,
+    CustomerName,
+    OrderID,
+    TotalAmount
+FROM (
+    SELECT 
+        c.CustomerID,
+        c.Name AS CustomerName,
+        s.OrderID,
+        s.TotalAmount,
+        RANK() OVER (PARTITION BY c.CustomerID ORDER BY s.TotalAmount DESC) rnk
+    FROM customer c
+    INNER JOIN salesorder s ON c.CustomerID = s.CustomerID
+) ranked_orders
+WHERE rnk <= 3
+ORDER BY CustomerID, rnk;
+
 --Q8. For each product, show its sales history with the previous and next sales quantities (based on order date). Display ProductID, ProductName, OrderID, OrderDate, Quantity, PrevQuantity, and NextQuantity.
+
+SELECT
+    p.ProductID,
+    p.Name ProductName,
+    so.OrderID,
+    so.OrderDate,
+    sod.Quantity,
+    (
+        SELECT TOP 1 sod2.Quantity
+        FROM salesorderdetail sod2
+        INNER JOIN salesorder so2 ON sod2.OrderID = so2.OrderID
+        WHERE sod2.ProductID = sod.ProductID AND so2.OrderDate < so.OrderDate
+    ) PrevQuantity,
+    (
+        SELECT TOP 1 sod3.Quantity
+        FROM salesorderdetail sod3
+        INNER JOIN salesorder so3 ON sod3.OrderID = so3.OrderID
+        WHERE sod3.ProductID = sod.ProductID AND so3.OrderDate > so.OrderDate
+    ) NextQuantity
+
+FROM salesorderdetail sod
+INNER JOIN salesorder so ON sod.OrderID = so.OrderID
+INNER JOIN product p ON sod.ProductID = p.ProductID
+ORDER BY p.ProductID, so.OrderDate;
+
 
 --Q9. Create a view named vw_CustomerOrderSummary that shows for each customer:
 --CustomerID, CustomerName, TotalOrders, TotalAmountSpent, and LastOrderDate.
 
+CREATE VIEW vw_CustomerOrderSummary AS
+SELECT
+    c.CustomerID,
+    c.Name CustomerName,
+    COUNT(s.OrderID) TotalOrders,
+    COALESCE(SUM(s.TotalAmount), 0) TotalAmountSpent,
+    MAX(s.OrderDate) LastOrderDate
+FROM customer c
+LEFT JOIN salesorder s ON c.CustomerID = s.CustomerID
+GROUP BY c.CustomerID, c.Name;
+
 --Q10. Write a stored procedure sp_GetSupplierSales that takes a SupplierID as input and returns the total sales amount for all products supplied by that supplier.
+
+CREATE PROCEDURE sp_GetSupplierSales
+    @SupplierID INT
+AS
+BEGIN
+    SELECT
+        sup.SupplierID,
+        sup.Name SupplierName,
+        SUM(sod.TotalAmount) TotalSalesAmount
+    FROM supplier sup
+    INNER JOIN purchaseorder po ON sup.SupplierID = po.SupplierID
+    INNER JOIN purchaseorderdetail pod ON po.OrderID = pod.OrderID
+    INNER JOIN product p ON pod.ProductID = p.ProductID
+    INNER JOIN salesorderdetail sod ON p.ProductID = sod.ProductID
+    WHERE sup.SupplierID = @SupplierID
+    GROUP BY sup.SupplierID, sup.Name;
+END;
